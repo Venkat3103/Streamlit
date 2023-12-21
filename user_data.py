@@ -1,5 +1,3 @@
-# user_data.py
-
 import streamlit as st
 from security import check_password
 
