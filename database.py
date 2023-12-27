@@ -30,6 +30,31 @@ def get_initial_df(conn):
     product_catalogue['Select'] = False
     return product_catalogue
 
-def fetch_order_details():
-    #implement
-    pass
+def fetch_order_items(conn, order_id):
+    items_query = f"""
+        SELECT pc.department, pc.product_name, oi.quantity, oi.unit_price
+        FROM orders.order_items oi JOIN product.product_catalogue pc
+        ON oi.product_id = pc.product_id
+        WHERE oi.order_id = {order_id}
+    """
+    order_items = pd.read_sql(items_query, conn)
+    return order_items
+
+def fetch_order_details(conn, consumer_id):
+    query = f"""
+        SELECT *
+        FROM orders.order_details
+        WHERE consumer_id = {consumer_id}
+    """
+    order_details = pd.read_sql(query, conn)
+    return order_details
+
+def get_user_details(conn, username):
+    print(username)
+    query = f"""
+        SELECT *
+        FROM user.user_data
+        WHERE username = '{username}'
+    """
+    user_details = pd.read_sql(query, conn)
+    return user_details
