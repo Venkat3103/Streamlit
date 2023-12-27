@@ -7,7 +7,7 @@ from checkout import checkout_page
 from database import get_database_connection
 from shopper_order import modify_order
 from shopper_insights import insights
-
+from consumer_home import consumer_home
 def select_user_class():
     user_class = st.radio("Select User Class", ["Consumer", "Shopper"], index=0)
     return user_class.lower() 
@@ -26,6 +26,7 @@ def main(conn):
             st.session_state.user_data['user_class'] = user_class
             if form_option == "Login":
                 login_form(conn,user_class)
+                print(st.session_state)
             elif form_option == "Register":
                 register_form(conn,user_class)
 
@@ -36,6 +37,9 @@ def main(conn):
             # Redirect to the home page
             st.session_state.user_data = {}
             st.session_state.page = "home"
+            st.rerun()
+        if st.session_state.page == "consumer_home":
+            consumer_home(conn)
         if st.session_state.page == "order":
             order_page(conn)
         elif st.session_state.page == "checkout":
@@ -47,6 +51,7 @@ def main(conn):
             # Redirect to the home page
             st.session_state.user_data = {}
             st.session_state.page = "home"
+            st.rerun()
         selected_page = st.sidebar.radio("Select Page", ["Shopper Dashboard", "Insights"])
         if selected_page == "Shopper Dashboard":
             modify_order()
