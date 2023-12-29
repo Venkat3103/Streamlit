@@ -77,9 +77,17 @@ def checkout_page(order_details, username,conn):
                 order_items_df['ORDER_ID'] = last_order_id
                 #pd_writer.write_pandas(conn, order_items_df, "order_items", schema="orders", if_exists='append', index=False)
                 insert_new_order_details(conn,order_items_df)
+                st.write(st.session_state)
                 #have to clear session state
                 st.write("Your order number is: ",str(last_order_id))
                 st.success("Order placed successfully! Thank you for your purchase")
+                keys_to_keep = ['page', 'user_data']
+
+                # Clear everything in session_state except keys_to_keep
+                for key in list(st.session_state.keys()):
+                    if key not in keys_to_keep:
+                        del st.session_state[key]
+                st.write(st.session_state)
                 st.session_state.page = "consumer_home"
                 st.rerun()
             else:
