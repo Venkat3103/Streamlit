@@ -2,28 +2,8 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import numpy as np
-from database import get_user_details
-
-
-def get_user_ids(username,conn):
-    cid = get_user_details(conn,username)
-    shopper_id_query = """
-                    SELECT USER_ID from user.user_data where USER_CLASS like 'shopper'
-                    """
-    sid = pd.read_sql(shopper_id_query,conn)
-    st.write(cid)
-    st.write(sid)
-    return cid.USER_ID.loc[0],np.random.choice(sid.USER_ID.to_list())
-
-
-def fetch_order_details(conn, consumer_id):
-    query = f"""
-        SELECT *
-        FROM orders.order_details
-        WHERE consumer_id = {consumer_id}
-    """
-    order_details = pd.read_sql(query, conn)
-    return order_details
+from database import get_user_details, insert_new_order_details, get_user_ids
+from snowflake.connector.pandas_tools import pd_writer
 
 def checkout_page(order_details, username,conn):
     current_datetime = datetime.now()
@@ -40,9 +20,8 @@ def checkout_page(order_details, username,conn):
         st.write("    ")
         st.write("    ")
         if st.button("Back to Order"):
-            pass
-            #st.session_state.page = "order"
-            #st.rerun()
+            st.session_state.page = "order"
+            st.rerun()
 
     with st.form("delivery_form"):
         st.subheader("Delivery Details")
@@ -54,7 +33,7 @@ def checkout_page(order_details, username,conn):
         st.dataframe(order_details, use_container_width=True, hide_index=True)
 
         # Calculate and display order total
-        order_amount = (order_details['quantity'] * order_details['price']).sum()
+        order_amount = (order_details['Quantity'] * order_details['PRICE']).sum()
 
         # Create three columns for Order Amount, Tip, and Total Amount
         col1, col2, col3 = st.columns([1, 1, 1])
@@ -75,26 +54,34 @@ def checkout_page(order_details, username,conn):
            form_submit_button = st.form_submit_button(label="Place Order")
 
         # Form submit button
-        
-
         # Show the review section only if the form is submitted and all fields are filled
         if form_submit_button:
             if delivery_address and delivery_date and delivery_time:
                 # Write to Snowflake table
-                # connection = create_snowflake_connection()
                 consumer_id, shopper_id = get_user_ids(username,conn)
                 total_amount = order_amount + tip
-
+                order_items_df = order_details.copy()[['PRODUCT_ID','Quantity','PRICE']]
+                order_items_df = order_items_df.rename(columns={"PRICE":"UNIT_PRICE"})
+                #pd_writer.write_pandas(conn, order_items_df, "order_items", schema="orders", if_exists='append', index=False)
+                st.write(order_items_df)
                 st.write(order_amount,consumer_id,shopper_id,order_date, order_time, delivery_date , delivery_time,delivery_address,tip,total_amount)
-                #st.write(get_product_id(order_details,conn))
-                #create_order_query = f"""
-                #INSERT INTO order_details (total_amount,consumer_id,shopper_id,order_date, order_time, delivery_date, delivery_time, delivery_address)
-                #VALUES ('{order_amount}','{consumer_id}','{shopper_id}','{order_date}', '{order_time}','{delivery_date}', '{delivery_time}','{delivery_address}','{tip}','{total_amount}')
-                #"""
-                # execute_query(connection, create_order_query)
-                # connection.close()
+                insert_order_details_query = f"""
+                INSERT INTO orders.order_details (order_amount,consumer_id,shopper_id,order_date, order_time, delivery_date, delivery_time, delivery_address, tip, total_amount)
+                VALUES ('{order_amount}','{consumer_id}','{shopper_id}','{order_date}', '{order_time}','{delivery_date}', '{delivery_time}','{delivery_address}','{tip}','{total_amount}')
+                """
+                cursor = conn.cursor()
+                cursor.execute(insert_order_details_query)
 
-                st.success("Order placed successfully! Thank you for your purchase.")
+                order_number_query = f"""SELECT ORDER_ID from orders.order_details ORDER BY ORDER_ID DESC LIMIT 1"""
+                last_order_id = pd.read_sql(order_number_query,conn).ORDER_ID.iloc[0]
+                order_items_df['ORDER_ID'] = last_order_id
+                #pd_writer.write_pandas(conn, order_items_df, "order_items", schema="orders", if_exists='append', index=False)
+                insert_new_order_details(conn,order_items_df)
+                #have to clear session state
+                st.write("Your order number is: ",str(last_order_id))
+                st.success("Order placed successfully! Thank you for your purchase")
+                st.session_state.page = "consumer_home"
+                st.rerun()
             else:
                 st.warning("Please fill in all the delivery details before placing the order.")
 
