@@ -14,8 +14,8 @@ snowflake_params = {
 }
 
 # CSV file path
-csv_file_path = '~/Downloads/order_items (1).csv'
-#csv_file_path = '~/Downloads/order_details (3).csv'
+#csv_file_path = '~/Downloads/order_items.csv'
+csv_file_path = '~/Downloads/order_details (6).csv'
 # Read CSV into a Pandas DataFrame
 df = pd.read_csv(csv_file_path)
 
@@ -26,8 +26,8 @@ conn = snowflake.connector.connect(**snowflake_params)
 cursor = conn.cursor()
 
 # Insert data into Snowflake table using SQL in batches
-table_name = 'order_items'
-#table_name = 'order_details'
+#table_name = 'order_items'
+table_name = 'order_details'
 batch_size = 1000 
 
 for i in range(0, len(df), batch_size):
