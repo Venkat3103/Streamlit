@@ -25,13 +25,10 @@ def login_form(conn,user_class):
                 st.empty()
                 if user_class.lower() == "consumer":
                     st.info("Login Successful...")
-                    st.empty()
                     st.session_state["page"] = "consumer_home"
-                    st.write(st.session_state)
                     st.rerun()
                 elif user_class.lower() == "shopper":
                     st.info("Redirecting to Shopper Page")
-                    st.empty()
                     st.session_state["page"] = "shopper_order"
                     st.rerun()
             else:
