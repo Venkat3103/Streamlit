@@ -1,5 +1,5 @@
 import streamlit as st
-import config
+#import config
 import pandas as pd
 import smtplib
 from email.mime.text import MIMEText
@@ -10,10 +10,10 @@ from database import get_all_shopper_orders, get_user_details, get_consumer_emai
 # Function to send email
 def send_email(subject, body, to_email, attachment_path=None):
     # Email configuration
-    from_email = config.from_email
-    email_password = config.email_password
-    smtp_server = config.smtp_server
-    smtp_port = config.smtp_port
+    from_email = st.secrets["from_email"]
+    email_password = st.secrets["email_password"]
+    smtp_server = st.secrets["smtp_server"]
+    smtp_port = st.secrets["smtp_port"]
 
     # Create message
     message = MIMEMultipart()
