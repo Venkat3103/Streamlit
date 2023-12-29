@@ -102,8 +102,11 @@ def order_page(conn):
         checkout_button,_, home_button = st.columns([1.75,7.25,1.20])
         if checkout_button.button("Checkout"):
             merge_data()
-            st.session_state["page"] = "checkout"
-            st.rerun()
+            if st.session_state.df[(st.session_state.df['Select'])&(st.session_state.df['Quantity']!=0)].drop('Select', axis=1).shape[0]>0:
+                st.session_state["page"] = "checkout"
+                st.rerun()
+            else:
+                st.error("No items were added to the Cart")
         if home_button.button("Home"):
             merge_data()
             st.session_state["page"] = "consumer_home"
