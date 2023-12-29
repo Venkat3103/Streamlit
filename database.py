@@ -22,7 +22,7 @@ def get_all_departments(conn):
 
 def get_initial_df(conn):
     query = f"""
-        SELECT department as department, product_name as product_name, price as Price
+        SELECT product_id as product_id, department as department, product_name as product_name, price as Price
         FROM product.product_catalogue
     """
     product_catalogue = pd.read_sql(query, conn)
@@ -50,7 +50,6 @@ def fetch_order_details(conn, consumer_id):
     return order_details
 
 def get_user_details(conn, username):
-    print(username)
     query = f"""
         SELECT *
         FROM user.user_data
@@ -58,3 +57,23 @@ def get_user_details(conn, username):
     """
     user_details = pd.read_sql(query, conn)
     return user_details
+
+def get_all_shopper_orders(conn,username):
+    query = f"""
+        SELECT *
+        FROM orders.order_details od JOIN user.user_data ud
+        ON od.shopper_id = ud.user_id
+        WHERE ud.username = '{username}'
+    """
+    shopper_orders = pd.read_sql(query, conn)
+    return shopper_orders
+
+def get_consumer_email(conn, order_id):
+    query = f"""
+        WITH consumer_details as (SELECT consumer_id FROM orders.order_details where order_id = {order_id} )
+        SELECT ud.email 
+        FROM user.user_data ud 
+        JOIN consumer_details cd
+        on ud.user_id = cd.consumer_id
+    """
+    return pd.read_sql(query,conn)
