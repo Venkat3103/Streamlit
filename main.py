@@ -43,7 +43,7 @@ def main(conn):
         if st.session_state.page == "order":
             order_page(conn)
         elif st.session_state.page == "checkout":
-            checkout_page(st.session_state.df[(st.session_state.df['Select'])&(st.session_state.df['Quantity']!=0)].drop('Select', axis=1), st.session_state.user_data['username'])
+            checkout_page(st.session_state.df[(st.session_state.df['Select'])&(st.session_state.df['Quantity']!=0)].drop('Select', axis=1), st.session_state.user_data['username'],conn)
     elif st.session_state.user_data['user_class'] == "shopper":
         if st.sidebar.button("Logout"):
             # Clear session state variables
