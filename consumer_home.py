@@ -2,26 +2,6 @@ import streamlit as st
 import pandas as pd
 from database import get_database_connection, fetch_order_items, fetch_order_details, get_user_details
 
-
-def fetch_order_items(conn, order_id):
-    items_query = f"""
-        SELECT pc.department, pc.product_name, oi.quantity, oi.unit_price
-        FROM orders.order_items oi JOIN product.product_catalogue pc
-        ON oi.product_id = pc.product_id
-        WHERE oi.order_id = {order_id}
-    """
-    order_items = pd.read_sql(items_query, conn)
-    return order_items
-
-def fetch_order_details(conn, consumer_id):
-    query = f"""
-        SELECT *
-        FROM orders.order_details
-        WHERE consumer_id = {consumer_id}
-    """
-    order_details = pd.read_sql(query, conn)
-    return order_details
-
 def generate_receipt(order_details, order_items):
     # Replace this with your logic to generate the receipt content
     receipt_content = f"Order ID: {order_details['ORDER_ID']}\n"
@@ -37,11 +17,13 @@ def generate_receipt(order_details, order_items):
     return receipt_content
 
 def consumer_home(conn):
-    st.write("Welcome", st.session_state.user_data['username'])
-    conn = get_database_connection()
+    username =  st.session_state.user_data['username']
+    st.title("Welcome "+username)
     user_details = get_user_details(conn, st.session_state.user_data['username'])
     user_id = user_details.USER_ID.iloc[0]
     df = fetch_order_details(conn, user_id)
+    selected_order = st.selectbox(label = "Select your Order to view details",options = df.ORDER_ID.to_list())
+    df = df[df['ORDER_ID']==selected_order]
     for _, order_row in df.iterrows():
         # Display order details
         with st.expander(f"Order ID: {order_row['ORDER_ID']}"):
@@ -65,7 +47,7 @@ def consumer_home(conn):
             )
 
         # Start a new order button
-    if st.button(f"Start New Order"):
+    if st.button(f"Start a New Order"):
         st.session_state.page = "order"
         st.info("Redirecting to Order page")
         st.rerun()
