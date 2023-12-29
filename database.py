@@ -1,4 +1,4 @@
-import config
+#import config
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -6,13 +6,13 @@ import snowflake.connector
 
 def get_database_connection():
     return snowflake.connector.connect(
-        account = config.account,
-        user = config.user,
-        password = config.password,
-        warehouse = config.warehouse,
-        role = config.role,
-        database = config.database,
-        schema = config.schema
+        account = st.secrets["account"],
+        user = st.secrets["user"],
+        password = st.secrets["password"],
+        warehouse = st.secrets["warehouse"],
+        role = st.secrets["role"],
+        database = st.secrets["database"],
+        schema = st.secrets["schema"]
     )
 
 # Function to fetch all unique departments from the database
