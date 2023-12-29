@@ -3,7 +3,6 @@ import pandas as pd
 from datetime import datetime
 import numpy as np
 from database import get_user_details, insert_new_order_details, get_user_ids
-from snowflake.connector.pandas_tools import pd_writer
 
 def checkout_page(order_details, username,conn):
     current_datetime = datetime.now()
@@ -30,7 +29,7 @@ def checkout_page(order_details, username,conn):
         delivery_time = st.time_input("Delivery Time:")
 
         st.subheader("Order Summary")
-        st.dataframe(order_details, use_container_width=True, hide_index=True)
+        st.dataframe(order_details, use_container_width=True, hide_index=True, column_config={"PRODUCT_ID":None})
 
         # Calculate and display order total
         order_amount = (order_details['Quantity'] * order_details['PRICE']).sum()
@@ -63,8 +62,6 @@ def checkout_page(order_details, username,conn):
                 order_items_df = order_details.copy()[['PRODUCT_ID','Quantity','PRICE']]
                 order_items_df = order_items_df.rename(columns={"PRICE":"UNIT_PRICE"})
                 #pd_writer.write_pandas(conn, order_items_df, "order_items", schema="orders", if_exists='append', index=False)
-                st.write(order_items_df)
-                st.write(order_amount,consumer_id,shopper_id,order_date, order_time, delivery_date , delivery_time,delivery_address,tip,total_amount)
                 insert_order_details_query = f"""
                 INSERT INTO orders.order_details (order_amount,consumer_id,shopper_id,order_date, order_time, delivery_date, delivery_time, delivery_address, tip, total_amount)
                 VALUES ('{order_amount}','{consumer_id}','{shopper_id}','{order_date}', '{order_time}','{delivery_date}', '{delivery_time}','{delivery_address}','{tip}','{total_amount}')
@@ -75,10 +72,8 @@ def checkout_page(order_details, username,conn):
                 order_number_query = f"""SELECT ORDER_ID from orders.order_details ORDER BY ORDER_ID DESC LIMIT 1"""
                 last_order_id = pd.read_sql(order_number_query,conn).ORDER_ID.iloc[0]
                 order_items_df['ORDER_ID'] = last_order_id
-                #pd_writer.write_pandas(conn, order_items_df, "order_items", schema="orders", if_exists='append', index=False)
                 insert_new_order_details(conn,order_items_df)
-                st.write(st.session_state)
-                #have to clear session state
+
                 st.write("Your order number is: ",str(last_order_id))
                 st.success("Order placed successfully! Thank you for your purchase")
                 keys_to_keep = ['page', 'user_data']
@@ -87,7 +82,6 @@ def checkout_page(order_details, username,conn):
                 for key in list(st.session_state.keys()):
                     if key not in keys_to_keep:
                         del st.session_state[key]
-                st.write(st.session_state)
                 st.session_state.page = "consumer_home"
                 st.rerun()
             else:
