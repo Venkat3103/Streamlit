@@ -56,7 +56,7 @@ def main(conn):
         if selected_page == "Shopper Dashboard":
             modify_order(conn,st.session_state.user_data['username'])
         elif selected_page == "Insights":
-            insights()
+            insights(conn)
 
 if __name__ == "__main__":
     conn = get_database_connection()
