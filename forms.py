@@ -34,8 +34,6 @@ def login_form(conn,user_class):
                     st.empty()
                     st.session_state["page"] = "shopper_order"
                     st.rerun()
-                    st.write(st.session_state)
-                    # Add code to redirect to the shopper page
             else:
                 st.error("Invalid username or password")
 
