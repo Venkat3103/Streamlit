@@ -163,7 +163,6 @@ def insert_new_order_details(conn,df):
         placeholders = ', '.join(['%s' for _ in range(len(batch_df.columns))])
         print(placeholders)
         insert_query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
-        st.write(insert_query)
         # Convert DataFrame to a list of tuples for insertion
         data_to_insert = [tuple(row) for row in batch_df.values]
 
