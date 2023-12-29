@@ -99,7 +99,12 @@ def order_page(conn):
     with st.container():
         st.write("Your order:")
         st.dataframe(st.session_state.df[(st.session_state.df['Select'])&(st.session_state.df['Quantity']!=0)].drop('Select', axis=1),hide_index=True,column_config={"PRODUCT_ID":None},use_container_width=True)
-        if st.button("Checkout"):
+        checkout_button,_, home_button = st.columns([1.75,7.25,1.20])
+        if checkout_button.button("Checkout"):
             merge_data()
             st.session_state["page"] = "checkout"
+            st.rerun()
+        if home_button.button("Home"):
+            merge_data()
+            st.session_state["page"] = "consumer_home"
             st.rerun()
