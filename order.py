@@ -4,7 +4,7 @@ from database import get_initial_df
 
 def fetch_filtered_data(df,department, min_price, max_price):
     print(department)
-    return df[(df.DEPARTMENT==department)&(df.PRICE>=min_price)&(df.PRICE<=max_price)].sort_values(by=['DEPARTMENT','PRODUCT_NAME','PRICE'])[['DEPARTMENT','PRODUCT_NAME','PRICE','Quantity','Select']]
+    return df[(df.DEPARTMENT==department)&(df.PRICE>=min_price)&(df.PRICE<=max_price)].sort_values(by=['DEPARTMENT','PRODUCT_NAME','PRICE'])[['PRODUCT_ID','DEPARTMENT','PRODUCT_NAME','PRICE','Quantity','Select']]
    
 def dataframe_with_selections(df):
     df_with_selections = df.copy()
@@ -12,7 +12,7 @@ def dataframe_with_selections(df):
         df_with_selections,
         hide_index=True,
         column_config={"Select": st.column_config.CheckboxColumn(required=True)},
-        disabled=("PRODUCT_NAME","DEPARTMENT","PRICE")
+        disabled=("PRODUCT_ID,PRODUCT_NAME","DEPARTMENT","PRICE")
     )
     if edited_df.shape[0]>0:
         selected_rows = edited_df[edited_df.Select]
@@ -23,10 +23,14 @@ def dataframe_with_selections(df):
 
 def merge_data():
     merged_df = pd.merge(st.session_state.df, st.session_state.edited_data,
-                            on=['PRODUCT_NAME', 'DEPARTMENT', 'PRICE'],
+                            on=['PRODUCT_ID','PRODUCT_NAME', 'DEPARTMENT', 'PRICE'],
                             how='left', suffixes=('', '_edited'))
+    print(st.session_state.df)
+    print(st.session_state.edited_data)
+    print(merged_df)
     merged_df['Select'] = merged_df['Select_edited'].combine_first(merged_df['Select'])
     merged_df['Quantity'] = merged_df['Quantity_edited'].combine_first(merged_df['Quantity'])
+    print(merged_df.columns)
     merged_df = merged_df.drop(columns=['Select_edited','Quantity_edited'])
     merged_df.loc[merged_df['Select'] == False, 'Quantity'] = 0
     if st.session_state.department!=st.session_state.prev_department or st.session_state.min_price!=st.session_state.prev_min_price or st.session_state.max_price!=st.session_state.prev_max_price:
@@ -71,17 +75,19 @@ def order_page(conn):
     st.session_state.max_price = max_price
     limit = 10
     st.session_state.filtered_data = fetch_filtered_data(st.session_state.df,department, min_price, max_price)
-    if st.session_state.department!=st.session_state.prev_department or st.session_state.min_price!=st.session_state.prev_min_price or st.session_state.max_price!=st.session_state.prev_max_price or st.session_state.page_number!=st.session_state.prev_page_number:
+    if st.session_state.department!=st.session_state.prev_department or st.session_state.min_price!=st.session_state.prev_min_price or st.session_state.max_price!=st.session_state.prev_max_price:
        print("inside first if")
        merge_data()
     
     prev_button_col, _, next_button_col = st.columns([1, 8, 1])
 
     if prev_button_col.button("Prev") and st.session_state.page_number>0:
+        merge_data()
         print("Prev Clicked")
         st.session_state.page_number -= 1
 
     if next_button_col.button("Next") and st.session_state.page_number<=st.session_state.edited_data.shape[0]//10:
+        merge_data()
         print("Next Clicked")
         st.session_state.page_number += 1
     st.session_state.edited_data,st.session_state.selection = dataframe_with_selections(st.session_state.filtered_data[st.session_state.page_number*limit:((st.session_state.page_number*limit)+limit)])
