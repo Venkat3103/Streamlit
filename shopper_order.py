@@ -5,11 +5,10 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
-from database import get_all_shopper_orders, get_user_details, get_consumer_email,fetch_order_items
+from database import get_all_shopper_orders, get_user_details, get_consumer_email,fetch_order_items, update_order_item
 
 # Function to send email
 def send_email(subject, body, to_email, attachment_path=None):
-    st.write(subject, body,to_email)
     # Email configuration
     from_email = config.from_email
     email_password = config.email_password
@@ -62,19 +61,20 @@ def modify_order(conn,username):
 
             # Update the original DataFrame with the edited values
             if st.form_submit_button("Update"):
-                if updated_price==row['UNIT_PRICE'] and updated_quantity==row['QUANTITY']:
+                if updated_price==row['UNIT_PRICE'] and int(updated_quantity)==row['QUANTITY']:
                     st.error("No changes in values were observed")
                 else:
                     # Perform action
-                    df.loc[index, 'QUANTITY'] = updated_quantity
+                    df.loc[index, 'QUANTITY'] = int(updated_quantity)
                     df.loc[index, 'UNIT_PRICE'] = updated_price
                     subject = "Order Modified"
                     body = "Hello,\n\nThe following item(s) has been modified in your order:\n\n"
                     old_record =  f"Your Order: Product: {row['PRODUCT_NAME']}, Department: {row['DEPARTMENT']}, Quantity: {row['QUANTITY']}, Price: {row['UNIT_PRICE']}\n"
                     email_body = f"\n\nUpdated Details: Product: {row['PRODUCT_NAME']}, Department: {row['DEPARTMENT']}, Quantity: {updated_quantity}, Price: {updated_price}"
-                    #Query to update database
-                    send_email(subject, body + old_record + email_body, to_email)
-                    # Add your action here (e.g., execute SQL query)
+                    is_updated = update_order_item(conn,df.loc[index],selected_order_id)
+                    if is_updated:
+                        send_email(subject, body + old_record + email_body, to_email)
+                        st.success("Order Updated, Email Sent")
 
     # Show the final updated DataFrame
     st.write("Updated Order Data:")
