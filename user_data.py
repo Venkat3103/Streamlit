@@ -13,12 +13,13 @@ def insert_registration_data(conn,username, email, phone_number, hashed_password
 
             if existing_user:
                 st.error("Username, email, or phone number already exists. Please choose different credentials.")
-                return
+                return False
 
             cursor.execute("""
                 INSERT INTO user_data (username, email, phone_number, hashed_password, user_class)
                 VALUES (%s, %s, %s, %s, %s)
             """, (username, email, phone_number, hashed_password, user_class))
+            return True
 
 def validate_login(conn,username, password, user_class):
     with conn.cursor() as cursor:
