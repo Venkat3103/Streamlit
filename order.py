@@ -11,8 +11,9 @@ def dataframe_with_selections(df):
     edited_df = st.data_editor(
         df_with_selections,
         hide_index=True,
-        column_config={"Select": st.column_config.CheckboxColumn(required=True)},
-        disabled=("PRODUCT_ID,PRODUCT_NAME","DEPARTMENT","PRICE")
+        column_config={"Select": st.column_config.CheckboxColumn(required=True), "PRODUCT_ID":None},
+        disabled=("PRODUCT_ID,PRODUCT_NAME","DEPARTMENT","PRICE"),
+        use_container_width=True
     )
     if edited_df.shape[0]>0:
         selected_rows = edited_df[edited_df.Select]
@@ -93,11 +94,11 @@ def order_page(conn):
     st.session_state.edited_data,st.session_state.selection = dataframe_with_selections(st.session_state.filtered_data[st.session_state.page_number*limit:((st.session_state.page_number*limit)+limit)])
 
     
-    st.write("Your selection:")
-    st.write(st.session_state.selection)
+    st.write("Your Current Selection:")
+    st.dataframe(st.session_state.selection,hide_index=True,column_config={"PRODUCT_ID":None},use_container_width=True)
     with st.container():
         st.write("Your order:")
-        st.write(st.session_state.df[(st.session_state.df['Select'])&(st.session_state.df['Quantity']!=0)].drop('Select', axis=1))
+        st.dataframe(st.session_state.df[(st.session_state.df['Select'])&(st.session_state.df['Quantity']!=0)].drop('Select', axis=1),hide_index=True,column_config={"PRODUCT_ID":None},use_container_width=True)
         if st.button("Checkout"):
             merge_data()
             st.session_state["page"] = "checkout"
