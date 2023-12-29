@@ -54,7 +54,7 @@ def main(conn):
             st.rerun()
         selected_page = st.sidebar.radio("Select Page", ["Shopper Dashboard", "Insights"])
         if selected_page == "Shopper Dashboard":
-            modify_order()
+            modify_order(conn,st.session_state.user_data['username'])
         elif selected_page == "Insights":
             insights()
 
