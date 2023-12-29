@@ -50,8 +50,8 @@ def register_form(conn,user_class):
                 st.error("Please fill in all fields.")
             else:
                 hashed_password = hash_password(new_password)
-                insert_registration_data(conn,new_username, new_email, new_phone_number, hashed_password, user_class.lower())
-                st.success(f"Registered new {user_class.lower()}: {new_username}")
-                st.info(f"Email: {new_email}")
-                st.info(f"Phone Number: {new_phone_number}")
-                st.info(f"User Class: {user_class}")
+                if insert_registration_data(conn,new_username, new_email, new_phone_number, hashed_password, user_class.lower()):
+                    st.success(f"Registered new {user_class.lower()}: {new_username}")
+                    st.info(f"Email: {new_email}")
+                    st.info(f"Phone Number: {new_phone_number}")
+                    st.info(f"User Class: {user_class}")
