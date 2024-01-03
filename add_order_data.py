@@ -4,9 +4,9 @@ import pandas as pd
 
 # Snowflake connection parameters
 snowflake_params = {
-    'account': config.account,
-    'user': config.user,
-    'password': config.password,
+    'account': config.new_account,
+    'user': config.new_user,
+    'password': config.new_password,
     'warehouse': config.warehouse,
     'database': config.database,
     'schema': "orders",
@@ -14,8 +14,8 @@ snowflake_params = {
 }
 
 # CSV file path
-#csv_file_path = '~/Downloads/order_items.csv'
-csv_file_path = '~/Downloads/order_details (6).csv'
+csv_file_path = '~/Downloads/order_items.csv'
+#csv_file_path = '~/Downloads/order_details (6).csv'
 # Read CSV into a Pandas DataFrame
 df = pd.read_csv(csv_file_path)
 
@@ -26,8 +26,8 @@ conn = snowflake.connector.connect(**snowflake_params)
 cursor = conn.cursor()
 
 # Insert data into Snowflake table using SQL in batches
-#table_name = 'order_items'
-table_name = 'order_details'
+table_name = 'order_items'
+#table_name = 'order_details'
 batch_size = 1000 
 
 for i in range(0, len(df), batch_size):
