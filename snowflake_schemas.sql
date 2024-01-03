@@ -5,9 +5,8 @@ USE DATABASE GROCERY_SHOPPING;
 CREATE SCHEMA IF NOT EXISTS USER;
 
 USE SCHEMA USER;
-DROP TABLE user_data;
 
-CREATE TABLE user_data (
+CREATE TABLE IF NOT EXISTS user_data (
     user_id INTEGER AUTOINCREMENT PRIMARY KEY,
     username VARCHAR(255) UNIQUE NOT NULL,
     email VARCHAR(255) NOT NULL,
@@ -18,15 +17,12 @@ CREATE TABLE user_data (
 );
 
 
-SELECT * FROM USER_DATA;
-
 CREATE SCHEMA IF NOT EXISTS PRODUCT;
 
 USE SCHEMA PRODUCT;
-DROP TABLE product_catalogue;
 
 
-CREATE TABLE product_catalogue (
+CREATE TABLE IF NOT EXISTS product_catalogue (
     product_id INT PRIMARY KEY,
     product_name VARCHAR(255),
     aisle_id INT,
@@ -36,29 +32,31 @@ CREATE TABLE product_catalogue (
     price FLOAT
 );
 
-UPDATE product_catalogue
+UPDATE product.product_catalogue
 SET Price = ROUND(Price, 2);
+
+
 
 CREATE SCHEMA IF NOT EXISTS ORDERS;
 USE SCHEMA ORDERS;
 
-
-CREATE TABLE order_details (
-    order_id INT PRIMARY KEY,
-    total_amount FLOAT,
-    consumer_id INT,
-    shopper_id INT,
+CREATE TABLE IF NOT EXISTS order_details (
+    order_id INTEGER AUTOINCREMENT PRIMARY KEY,
+    order_amount FLOAT,
+    consumer_id INTEGER,
+    shopper_id INTEGER,
     order_date DATE,
     order_time TIME,
     delivery_date DATE,
     delivery_time TIME,
     delivery_address VARCHAR,
+    tip FLOAT,
+    total_amount FLOAT,
     FOREIGN KEY (consumer_id) REFERENCES user.user_data(user_id),
     FOREIGN KEY (shopper_id) REFERENCES user.user_data(user_id)
 );
 
-
-CREATE TABLE order_items (
+CREATE TABLE IF NOT EXISTS order_items (
     order_id INT,
     product_id INT,
     quantity INT,
